@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Health Scheme & Hospital Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e88e5;
+      --secondary: #11698e;
+      --accent: #43b480;
+      --background: #f7fafc;
+      --text: #222;
+      --text-light: #6a7a8c;
+      --border: #e3e8ef;
+      --radius: 12px;
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: var(--background);
+      color: var(--text);
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 0;
+      text-align: center;
+      box-shadow: 0 2px 7px #0001;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      background: #fff;
+      padding: 0.5rem 0;
+      box-shadow: 0 1px 4px #0001;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background .2s;
+    }
+    nav a:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .hero {
+      max-width: 780px;
+      margin: 2rem auto 1rem auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 2rem 3vw;
+      box-shadow: 0 2px 15px #0002;
+      text-align: center;
+    }
+    .search-group {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 520px;
+      margin: 1rem auto;
+      background: #f1f7fb;
+      border-radius: var(--radius);
+      align-items: center;
+      padding: 0.5rem;
+    }
+    .search-group input, .search-group select {
+      flex: 1;
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      outline: none;
+    }
+    .search-group button {
+      background: var(--accent);
+      padding: 0.6rem 1.4rem;
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .search-group button:hover { background: #388E3C; }
+    /* Hospital Cards */
+    .cardlist {
+      max-width: 920px;
+      margin: 2rem auto;
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(325px, 1fr));
+    }
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 1px 8px #0001;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border: 1px solid var(--border);
+      transition: box-shadow .2s;
+    }
+    .card:hover { box-shadow: 0 4px 32px #1e88e505; }
+
+    .hospital-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+    .hospital-specialties {
+      font-size: 0.98rem;
+      color: var(--accent);
+      margin-bottom: 5px;
+    }
+    .hospital-badges {
+      margin-bottom: 6px;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.20rem 0.7rem;
+      font-size: 0.80em;
+      border-radius: 14px;
+      margin-right: 0.13em;
+      margin-bottom: 0.13em;
+    }
+    .hospital-rating { 
+      font-size: 1rem;
+      color: #ff0400;
+      margin-left: .5em;
+    }
+    .card-actions {
+      margin-top: 12px;
+    }
+    .card-actions button {
+      margin-right: 0.7em;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5em 1em;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .favorite {
+      color: red;
+      font-weight: bold;
+    }
+    .scheme-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem auto;
+      box-shadow: 0 1px 8px #0002;
+      background: #fff;
+    }
+    .scheme-table th, .scheme-table td {
+      border: 1px solid var(--border);
+      padding: 0.7em;
+      text-align: left;
+    }
+    .scheme-table th {
+      background: var(--accent);
+      color: #fff;
+    }
+    /* Light/Dark Mode */
+    .togglemode {
+      position: fixed; top: 1rem; right: 1.3rem; z-index: 99; 
+      background: #fff; border: none; border-radius: 50%; box-shadow: 0 1px 4px #0002; padding: 0.7em;
+      cursor: pointer;
+    }
+    @media (max-width:700px){
+      .hero, .cardlist{padding: 1rem;}
+      .cardlist{grid-template-columns: minmax(220px,1fr);}
+    }
+    /* Accessibility */
+    html:focus-within{scroll-behavior:smooth;}
+  </style>
+</head>
+<body>
+  <button class="togglemode" id="toggle-theme" aria-label="Toggle light/dark mode">🌙</button>
+  <header>
+    <h1>Health Scheme & Hospital Finder</h1>
+    <div style="font-size:1rem;">Discover hospitals & health schemes that work for you</div>
+  </header>
+  <nav>
+    <a href="#find">Find Hospital</a>
+    <a href="#schemes">Schemes</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#favorites">Favorites</a>
+  </nav>
+  <div class="hero">
+    <h2>Search Hospitals</h2>
+    <form class="search-group" id="hospital-search">
+      <input type="text" id="searchQuery" placeholder="Hospital name, city, or pincode" aria-label="Search" />
+      <select id="specialty">
+        <option value="">Specialty (All)</option>
+        <option value="Cardiology">Cardiology</option>
+        <option value="Orthopedics">Orthopedics</option>
+        <option value="Pediatrics">Pediatrics</option>
+        <option value="Oncology">Oncology</option>
+      </select>
+      <button type="submit">🔍 Search</button>
+    </form>
+  </div>
+  
+  <section class="cardlist" id="hospital-list" aria-label="Hospital List">
+    <!-- Cards added by JS -->
+  </section>
+  
+  <section style="max-width:900px;margin:2rem auto;" id="schemes">
+    <h2>Explore Health Schemes</h2>
+    <table class="scheme-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Benefits</th>
+          <th>Eligibility</th>
+          <th>Apply</th>
+        </tr>
+      </thead>
+      <tbody id="schemes-data">
+        <!-- Added by JS -->
+      </tbody>
+    </table>
+  </section>
+  
+  <footer style="text-align:center;padding:2rem 0;background:#e3e8ef;color:#29434e;">
+    <div>© 2025 Health Scheme & Hospital Finder</div>
+  </footer>
+  
+  <script>
+    // Sample 
+    const hospitals = [
+      {
+        id: 1,
+        name: "Sunshine Hospital",
+        address: "123 MG Road, Bengaluru",
+        city: "Bengaluru",
+        specialties: ["Cardiology", "Pediatrics"],
+        schemes: ["Ayushman Bharat", "Private Plus"],
+        insurance: ["Star Health", "ICICI Lombard"],
+        rating: 4.5,
+        accreditation: ["NABH"],
+        recovery: 94,
+        favorite: false
+      },
+      {
+        id: 2,
+        name: "LifeLine Multispecialty",
+        address: "56 Park Street, Kolkata",
+        city: "Kolkata",
+        specialties: ["Orthopedics", "Oncology"],
+        schemes: ["Swastya Sathi", "Employer Gold"],
+        insurance: ["Max Bupa", "Religare"],
+        rating: 4.2,
+        accreditation: ["ISO"],
+        recovery: 91,
+        favorite: false
+      }
+    ];
+    // Schemes sample
+    const schemes = [
+      {
+        name: "Ayushman Bharat",
+        type: "Govt",
+        benefits: "5 lakh coverage/year",
+        eligibility: "Low-income, Indian citizen",
+        link: "#"
+      },
+      {
+        name: "Swastya Sathi",
+        type: "Govt",
+        benefits: "Family floater for all",
+        eligibility: "West Bengal residents",
+        link: "#"
+      }
+    ];
+    // Hospital List Render
+    function renderHospitals(list){
+      const wrap = document.getElementById('hospital-list');
+      wrap.innerHTML = '';
+      if(!list.length){
+        wrap.innerHTML = "<div style='padding:2em;font-size:1.1em;color:var(--text-light)'>No hospitals found.</div>"
+        return;
+      }
+      list.forEach(hospital => {
+        wrap.innerHTML += `
+          <article class="card" tabindex="0">
+            <span class="hospital-name">${hospital.name}</span>
+            <span><small>${hospital.address}</small></span>
+            <div class="hospital-specialties">${hospital.specialties.map(s=>`<span class="badge">${s}</span>`).join(' ')}</div>
+            <div class="hospital-badges">
+              ${hospital.accreditation.map(a=>`<span class="badge" style="background:var(--accent)">${a}</span>`).join('')}
+              <span class="badge" style="background:#ffb300">Recovery: ${hospital.recovery}%</span>
+            </div>
+            <div>
+              <strong>Schemes:</strong> ${hospital.schemes.join(', ')}<br>
+              <strong>Insurance:</strong> ${hospital.insurance.join(', ')}
+            </div>
+            <span class="hospital-rating">★ ${hospital.rating}</span>
+            <div class="card-actions">
+              <button onclick="toggleFavorite(${hospital.id})" aria-label="Add to favorite">${hospital.favorite ? '❤️' : '🤍'} Favorite</button>
+              <button>View Profile</button>
+            </div>
+          </article>
+        `;
+      });
+    }
+    // On search submit
+    document.getElementById('hospital-search').addEventListener('submit', function(e){
+      e.preventDefault();
+      const q = document.getElementById('searchQuery').value.toLowerCase();
+      const s = document.getElementById('specialty').value;
+      const res = hospitals.filter(h => 
+        (!q || h.name.toLowerCase().includes(q) || h.city.toLowerCase().includes(q) || h.address.toLowerCase().includes(q)) &&
+        (!s || h.specialties.includes(s))
+      );
+      renderHospitals(res);
+    });
+    function toggleFavorite(id){
+      const idx = hospitals.findIndex(h=>h.id===id);
+      hospitals[idx].favorite = !hospitals[idx].favorite;
+      renderHospitals(hospitals);
+    }
+    // Render schemes
+    function renderSchemes(){
+      const tb = document.getElementById('schemes-data');
+      tb.innerHTML = '';
+      schemes.forEach(s => {
+        tb.innerHTML += `<tr>
+          <td>${s.name}</td>
+          <td>${s.type}</td>
+          <td>${s.benefits}</td>
+          <td>${s.eligibility}</td>
+          <td><a href="${s.link}" target="_blank">Apply Now</a></td>
+        </tr>`;
+      });
+    }
+    // Light/dark mode toggle
+    let dark=false;
+    document.getElementById('toggle-theme').addEventListener('click',()=>{
+      dark=!dark;
+      if(dark){
+        document.body.style.background="#171c26";
+        document.body.style.color="#fff";
+        document.querySelector('header').style.background="#232b36";
+        document.querySelectorAll('.card,.hero,.scheme-table').forEach(el=>el.style.background="#263341");
+        document.querySelectorAll('.card,.scheme-table').forEach(el=>el.style.color="#fff");
+        document.querySelector('footer').style.background="#232b36";
+      }else{
+        document.body.style.background="var(--background)";
+        document.body.style.color="var(--text)";
+        document.querySelector('header').style.background="var(--primary)";
+        document.querySelectorAll('.card,.hero,.scheme-table').forEach(el=>el.style.background="#fff");
+        document.querySelectorAll('.card,.scheme-table').forEach(el=>el.style.color="#222");
+        document.querySelector('footer').style.background="#e3e8ef";
+      }
+    });
+    // Initial
+    renderHospitals(hospitals);
+    renderSchemes();
+  </script>
+</body>
+</html>
